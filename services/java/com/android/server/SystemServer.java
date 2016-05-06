@@ -588,27 +588,6 @@ public final class SystemServer {
             reportWtf("making display ready", e);
         }
 
-        if (mFactoryTestMode != FactoryTest.FACTORY_TEST_LOW_LEVEL) {
-            if (!disableStorage &&
-                !"0".equals(SystemProperties.get("system_init.startmountservice"))) {
-                try {
-                    /*
-                     * NotificationManagerService is dependant on MountService,
-                     * (for media / usb notifications) so we must start MountService first.
-                     */
-                    mSystemServiceManager.startService(MOUNT_SERVICE_CLASS);
-                    mountService = IMountService.Stub.asInterface(
-                            ServiceManager.getService("mount"));
-                } catch (Throwable e) {
-                    reportWtf("starting Mount Service", e);
-                }
-            }
-        }
-
-        // We start this here so that we update our configuration to set watch or television
-        // as appropriate.
-        mSystemServiceManager.startService(UiModeManagerService.class);
-
         try {
             mPackageManagerService.performBootDexOpt();
         } catch (Throwable e) {
@@ -624,6 +603,24 @@ public final class SystemServer {
         }
 
         if (mFactoryTestMode != FactoryTest.FACTORY_TEST_LOW_LEVEL) {
+            if (!disableStorage &&
+                !"0".equals(SystemProperties.get("system_init.startmountservice"))) {
+                try {
+                    /*
+                     * NotificationManagerService is dependant on MountService,
+                     * (for media / usb notifications) so we must start MountService first.
+                     */
+                    mSystemServiceManager.startService(MOUNT_SERVICE_CLASS);
+                    mountService = IMountService.Stub.asInterface(
+                            ServiceManager.getService("mount"));
+                } catch (Throwable e) {
+                    reportWtf("starting Mount Service", e);
+                }
+            }
+
+        // We start this here so that we update our configuration to set watch or television
+        // as appropriate.
+        mSystemServiceManager.startService(UiModeManagerService.class);
             if (!disableNonCoreServices) {
                 try {
                     Slog.i(TAG,  "LockSettingsService");
